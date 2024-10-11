@@ -10,15 +10,19 @@ import { CountriesService } from '../../services/countries.service';
 export class ByCapitalPageComponent {
 
   public countries: Country[] = [];
+  public isLoading: boolean = false;
   constructor(private countriesService: CountriesService) {
 
   }
 
   searchByCapital(term: string): void {
+
+    this.isLoading = true;
     this.countriesService
       .search(term, SearchBy.capital)
       .subscribe(countries => { // cuando te suscribes en cuando la petición http se va a realizar
         this.countries = countries == null ? [] : countries;
+        this.isLoading = false;
       });
   }
 }
