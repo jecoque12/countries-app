@@ -1,5 +1,7 @@
+<!-- (keyup.enter)="onEnter()" -->
 <input type="text"
        [placeholder]="placeHolder"
        class="form-control"
-       (keyup.enter)="onEnter()"
+       (keyup)="onKeyPress(searchBox.value)"
+       [value]="initialValue"
        #searchBox />

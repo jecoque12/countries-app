@@ -2,6 +2,8 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, delay, map, Observable, of, tap } from 'rxjs';
 import { Country, SearchBy } from '../interfaces/interfaces';
+import { CacheStore } from '../interfaces/cache-store.interface';
+import { Region } from '../interfaces/Region.type';
 
 @Injectable({
   providedIn: 'root'
@@ -10,53 +12,29 @@ export class CountriesService {
   private URL: string = 'https://restcountries.com/v3.1'
   constructor(private http: HttpClient) { }
 
-
-  // searchCapital(term: string): Observable<Country[]> {
-
-  //   return this.http.get<Country[]>(`${this.URL}/capital/${term}`)
-  //     .pipe(
-  //       // tap(countries => console.log('Paso por el tap 1 ', countries)),
-  //       // map(countries => []),
-  //       // tap(countries => console.log('Paso por el tap 2', countries)),
-  //       catchError(() => of([])) // * es un catch, el of lo que hace es construir un observable nuevo donde devolvemos una lista vacía ante cualquier tipo de error
-
-
-  //     );
-  //   // cuando te suscribes en cuando la petición http se va a realizar
-  // }
-  // searchRegion(term: string): Observable<Country[]> {
-
-  //   return this.http.get<Country[]>(`${this.URL}/region/${term}`)
-  //     .pipe(
-  //       // tap(countries => console.log('Paso por el tap 1 ', countries)),
-  //       // map(countries => []),
-  //       // tap(countries => console.log('Paso por el tap 2', countries)),
-  //       catchError(() => of([])) // * es un catch, el of lo que hace es construir un observable nuevo donde devolvemos una lista vacía ante cualquier tipo de error
-
-
-  //     );
-  //   // cuando te suscribes en cuando la petición http se va a realizar
-  // }
-  // searchCountry(term: string): Observable<Country[]> {
-
-  //   return this.http.get<Country[]>(`${this.URL}/name/${term}`)
-  //     .pipe(
-  //       // tap(countries => console.log('Paso por el tap 1 ', countries)),
-  //       // map(countries => []),
-  //       // tap(countries => console.log('Paso por el tap 2', countries)),
-  //       catchError(() => of([])) // * es un catch, el of lo que hace es construir un observable nuevo donde devolvemos una lista vacía ante cualquier tipo de error
-
-
-  //     );
-  //   // cuando te suscribes en cuando la petición http se va a realizar
-  // }
-
+  public cacheStore: CacheStore = {
+    byCapital: { term: '', countries: [] },
+    byCountries: { term: '', countries: [] },
+    byRegion: { region: '', countries: [] }
+  }
   search(term: string, type: SearchBy): Observable<Country[] | null> {
 
     let URL = this.getURL(term, type);
 
     return this.http.get<Country[]>(URL)
       .pipe(
+        tap(countries => {
+          if (type == SearchBy.capital) {
+            this.cacheStore.byCapital = { term, countries }
+          }
+          if (type == SearchBy.country) {
+            this.cacheStore.byCountries = { term, countries }
+          }
+          if (type == SearchBy.region) {
+            this.cacheStore.byRegion = { region: term as Region, countries };
+          }
+
+        }),
         catchError(() => of(null)),
         delay(2000),
         // * es un catch, el of lo que hace es construir un observable nuevo donde devolvemos una lista vacía ante cualquier tipo de error
